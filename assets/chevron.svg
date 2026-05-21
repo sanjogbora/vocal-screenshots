@@ -1,0 +1,6 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="mynaui:chevron-up-solid">
+<rect width="24" height="24" fill="#FFFDF6"/>
+<path id="Vector" d="M12.5298 8.47032C12.3892 8.32987 12.1986 8.25098 11.9998 8.25098C11.8011 8.25098 11.6105 8.32987 11.4698 8.47032L5.46983 14.4703C5.32938 14.6109 5.25049 14.8016 5.25049 15.0003C5.25049 15.1991 5.32938 15.3897 5.46983 15.5303H18.5298C18.6703 15.3897 18.7492 15.1991 18.7492 15.0003C18.7492 14.8016 18.6703 14.6109 18.5298 14.4703L12.5298 8.47032Z" fill="var(--fill-0, #4E4E4E)"/>
+</g>
+</svg>

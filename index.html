@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VoCal Screenshot Generator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="tool-shell">
+      <section class="control-panel" aria-label="VoCal editor">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">VoCal</p>
+            <h1>Screenshot values</h1>
+          </div>
+          <button class="icon-button" type="button" data-action="reset" title="Reset demo data" aria-label="Reset demo data">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 12a8 8 0 1 0 2.34-5.66" />
+              <path d="M4 4v6h6" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="panel-actions">
+          <div class="segmented" aria-label="Meal card state">
+            <button type="button" data-action="set-view" data-view="expanded">Opened</button>
+            <button type="button" data-action="set-view" data-view="collapsed">Collapsed</button>
+          </div>
+          <button class="secondary-button" type="button" data-action="download">Download PNG</button>
+        </div>
+
+        <div id="editor"></div>
+      </section>
+
+      <section class="preview-column" aria-label="VoCal preview">
+        <div id="phone" class="phone-screen"></div>
+      </section>
+    </main>
+
+    <script src="assets-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
