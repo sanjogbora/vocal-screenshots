@@ -278,7 +278,7 @@ function renderJsonTools() {
         <a class="text-button gemini-link" href="${GEMINI_GEM_URL}" target="_blank" rel="noopener noreferrer">Open Gemini Gem</a>
       </div>
       <div class="json-steps">
-        <p><span>1</span> Type your dishes and meal times in the <a href="${GEMINI_GEM_URL}" target="_blank" rel="noopener noreferrer">Gemini Gem</a>. Example: <strong>Breakfast: poha and a banana. Lunch: rajma chawal.</strong></p>
+        <p><span>1</span> Type your dishes and meal times in the <a href="${GEMINI_GEM_URL}" target="_blank" rel="noopener noreferrer">Gemini Gem</a>. Example: <strong>Breakfast: scrambled eggs and toast. Lunch: chicken Caesar salad.</strong></p>
         <p><span>2</span> Copy the output from Gemini and paste it below to populate the screenshot maker.</p>
       </div>
       <label>
