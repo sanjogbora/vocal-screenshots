@@ -260,6 +260,13 @@ h2 {
   background: rgba(231, 116, 151, 0.11);
 }
 
+a.text-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .danger-button {
   color: #85401c;
   background: rgba(217, 140, 70, 0.14);
@@ -330,12 +337,48 @@ textarea:focus {
   min-height: 118px;
 }
 
-.prompt-textarea {
-  min-height: 190px;
-}
-
 .import-textarea {
   min-height: 170px;
+}
+
+.gemini-link {
+  white-space: nowrap;
+}
+
+.json-steps {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(249, 243, 227, 0.72);
+  border: 1px solid rgba(221, 162, 6, 0.22);
+  border-radius: 12px;
+}
+
+.json-steps p {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  color: rgba(78, 78, 78, 0.82);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.json-steps a {
+  color: var(--dark-pink);
+  font-weight: 700;
+}
+
+.json-steps span {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  color: #85401c;
+  background: var(--skin);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .json-actions {

@@ -6,6 +6,6 @@ Open `index.html` in a browser. The editor controls daily calorie and macro limi
 
 Use the `Opened` and `Collapsed` controls to switch between the two Figma states, then use `Download PNG` to export the current phone preview.
 
-Use the `LLM JSON` section to copy a system prompt, ask an LLM for a JSON response, and paste that response back into the app to populate limits, meals, items, calories, and macros in one step.
+Use the `Gemini import` section to open the Gemini Gem, describe the dishes and meal times, then paste Gemini's JSON response back into the app to populate limits, meals, items, calories, and macros in one step.
 
 The preview uses local copies of the Figma-exported icons and the Fraunces / Plus Jakarta Sans font files, so it does not depend on remote assets at runtime.

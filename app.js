@@ -77,43 +77,7 @@ const icons = {
   </svg>`,
 };
 
-const JSON_SYSTEM_PROMPT = `You are generating data for the VoCal screenshot generator.
-Return only valid JSON. Do not wrap it in markdown.
-
-Schema:
-{
-  "view": "expanded",
-  "streak": "12",
-  "limits": {
-    "calories": "1583",
-    "protein": "120",
-    "carbs": "120",
-    "fat": "120"
-  },
-  "meals": [
-    {
-      "name": "Breakfast",
-      "expanded": true,
-      "items": [
-        {
-          "name": "Chicken sandwich",
-          "calories": "111",
-          "protein": "11",
-          "carbs": "16",
-          "fat": "5"
-        }
-      ]
-    }
-  ]
-}
-
-Rules:
-- Use strings for every number so the screenshot can show exactly what is provided.
-- Meal names should be Breakfast, Lunch, Dinner, or Snack unless the user asks otherwise.
-- Include every food item as its own item object.
-- calories means kcal for that item.
-- protein, carbs, and fat are grams for that item.
-- Use "expanded" unless the user explicitly asks for collapsed cards.`;
+const GEMINI_GEM_URL = "https://gemini.google.com/gem/1Gr3fGPKOBHIPvpEEDHmi-m1omt2EcJwC?usp=sharing";
 
 function loadState() {
   try {
@@ -310,15 +274,15 @@ function renderJsonTools() {
   return `
     <section class="editor-section json-section">
       <div class="field-row">
-        <h2>LLM JSON</h2>
-        <button class="text-button" type="button" data-action="copy-prompt">Copy prompt</button>
+        <h2>Gemini import</h2>
+        <a class="text-button gemini-link" href="${GEMINI_GEM_URL}" target="_blank" rel="noopener noreferrer">Open Gemini Gem</a>
+      </div>
+      <div class="json-steps">
+        <p><span>1</span> Type your dishes and meal times in the <a href="${GEMINI_GEM_URL}" target="_blank" rel="noopener noreferrer">Gemini Gem</a>. Example: <strong>Breakfast: poha and a banana. Lunch: rajma chawal.</strong></p>
+        <p><span>2</span> Copy the output from Gemini and paste it below to populate the screenshot maker.</p>
       </div>
       <label>
-        System prompt
-        <textarea class="json-textarea prompt-textarea" readonly>${escapeHtml(JSON_SYSTEM_PROMPT)}</textarea>
-      </label>
-      <label>
-        Paste JSON
+        Gemini JSON output
         <textarea id="json-import" class="json-textarea import-textarea" spellcheck="false" placeholder='{"limits":{"calories":"1583"},"meals":[...]}'>${escapeHtml(jsonDraft)}</textarea>
       </label>
       <div class="json-actions">
@@ -702,19 +666,6 @@ document.addEventListener("click", (event) => {
 
   if (action === "download") {
     downloadPreview();
-    return;
-  }
-
-  if (action === "copy-prompt") {
-    copyText(JSON_SYSTEM_PROMPT)
-      .then(() => {
-        jsonStatus = "Prompt copied.";
-        render();
-      })
-      .catch(() => {
-        jsonStatus = "Could not copy prompt.";
-        render();
-      });
     return;
   }
 
