@@ -39,6 +39,8 @@ const defaultState = {
 
 let state = loadState();
 let addMealMenuOpen = false;
+let jsonStatus = "";
+let jsonDraft = "";
 
 const editor = document.querySelector("#editor");
 const phone = document.querySelector("#phone");
@@ -74,6 +76,44 @@ const icons = {
     <path d="M9 7V4h6v3"/>
   </svg>`,
 };
+
+const JSON_SYSTEM_PROMPT = `You are generating data for the VoCal screenshot generator.
+Return only valid JSON. Do not wrap it in markdown.
+
+Schema:
+{
+  "view": "expanded",
+  "streak": "12",
+  "limits": {
+    "calories": "1583",
+    "protein": "120",
+    "carbs": "120",
+    "fat": "120"
+  },
+  "meals": [
+    {
+      "name": "Breakfast",
+      "expanded": true,
+      "items": [
+        {
+          "name": "Chicken sandwich",
+          "calories": "111",
+          "protein": "11",
+          "carbs": "16",
+          "fat": "5"
+        }
+      ]
+    }
+  ]
+}
+
+Rules:
+- Use strings for every number so the screenshot can show exactly what is provided.
+- Meal names should be Breakfast, Lunch, Dinner, or Snack unless the user asks otherwise.
+- Include every food item as its own item object.
+- calories means kcal for that item.
+- protein, carbs, and fat are grams for that item.
+- Use "expanded" unless the user explicitly asks for collapsed cards.`;
 
 function loadState() {
   try {
@@ -241,6 +281,8 @@ function renderEditor() {
       </div>
     </section>
 
+    ${renderJsonTools()}
+
     <section class="editor-section">
       <div class="field-row">
         <h2>Meals</h2>
@@ -260,6 +302,30 @@ function renderEditor() {
       <div class="meal-editor">
         ${state.meals.map(renderMealEditor).join("") || `<div class="empty-state">Add a meal to start building the preview.</div>`}
       </div>
+    </section>
+  `;
+}
+
+function renderJsonTools() {
+  return `
+    <section class="editor-section json-section">
+      <div class="field-row">
+        <h2>LLM JSON</h2>
+        <button class="text-button" type="button" data-action="copy-prompt">Copy prompt</button>
+      </div>
+      <label>
+        System prompt
+        <textarea class="json-textarea prompt-textarea" readonly>${escapeHtml(JSON_SYSTEM_PROMPT)}</textarea>
+      </label>
+      <label>
+        Paste JSON
+        <textarea id="json-import" class="json-textarea import-textarea" spellcheck="false" placeholder='{"limits":{"calories":"1583"},"meals":[...]}'>${escapeHtml(jsonDraft)}</textarea>
+      </label>
+      <div class="json-actions">
+        <button class="secondary-button" type="button" data-action="apply-json">Apply JSON</button>
+        <button class="text-button" type="button" data-action="copy-json">Copy current JSON</button>
+      </div>
+      ${jsonStatus ? `<p class="json-status">${escapeHtml(jsonStatus)}</p>` : ""}
     </section>
   `;
 }
@@ -526,6 +592,11 @@ function caloriePill(value, outline, raw = false) {
 
 editor.addEventListener("input", (event) => {
   const target = event.target;
+  if (target instanceof HTMLTextAreaElement && target.id === "json-import") {
+    jsonDraft = target.value;
+    jsonStatus = "";
+    return;
+  }
   if (!(target instanceof HTMLInputElement)) return;
   const action = target.dataset.action;
 
@@ -634,8 +705,172 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (action === "copy-prompt") {
+    copyText(JSON_SYSTEM_PROMPT)
+      .then(() => {
+        jsonStatus = "Prompt copied.";
+        render();
+      })
+      .catch(() => {
+        jsonStatus = "Could not copy prompt.";
+        render();
+      });
+    return;
+  }
+
+  if (action === "copy-json") {
+    copyText(currentStateJson())
+      .then(() => {
+        jsonStatus = "Current JSON copied.";
+        render();
+      })
+      .catch(() => {
+        jsonStatus = "Could not copy JSON.";
+        render();
+      });
+    return;
+  }
+
+  if (action === "apply-json") {
+    applyJsonImport();
+  }
+
   render();
 });
+
+function applyJsonImport() {
+  const input = document.querySelector("#json-import");
+  const source = input?.value || jsonDraft;
+  jsonDraft = source;
+  try {
+    const parsed = parseJsonPayload(source);
+    state = normalizeImportedState(parsed);
+    jsonStatus = "JSON applied.";
+  } catch (error) {
+    console.error("Unable to apply JSON", error);
+    jsonStatus = error.message || "Could not apply JSON.";
+  }
+}
+
+function parseJsonPayload(source) {
+  const trimmed = source.trim();
+  if (!trimmed) throw new Error("Paste JSON first.");
+
+  const withoutFence = trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+
+  try {
+    return JSON.parse(withoutFence);
+  } catch {
+    const start = withoutFence.indexOf("{");
+    const end = withoutFence.lastIndexOf("}");
+    if (start === -1 || end === -1 || end <= start) throw new Error("Invalid JSON.");
+    return JSON.parse(withoutFence.slice(start, end + 1));
+  }
+}
+
+function normalizeImportedState(input) {
+  const meals = Array.isArray(input.meals) ? input.meals : [];
+  if (!meals.length) throw new Error("JSON must include a meals array.");
+
+  const limits = input.limits || input.dailyLimits || {};
+  return normalizeState({
+    view: input.view === "collapsed" ? "collapsed" : "expanded",
+    streak: valueFrom(input, ["streak", "streakDays"]) ?? state.streak,
+    limits: {
+      calories:
+        valueFrom(limits, ["calories", "dailyCalories", "calorieLimit", "kcal", "kcalLimit"]) ??
+        valueFrom(input, ["calories", "dailyCalories", "calorieLimit"]) ??
+        state.limits.calories,
+      protein: valueFrom(limits, ["protein", "proteinLimit", "pro"]) ?? state.limits.protein,
+      carbs: valueFrom(limits, ["carbs", "carb", "carbohydrates", "carbLimit"]) ?? state.limits.carbs,
+      fat: valueFrom(limits, ["fat", "fats", "fatLimit"]) ?? state.limits.fat,
+    },
+    meals: meals.map(normalizeImportedMeal),
+  });
+}
+
+function normalizeImportedMeal(meal, mealIndex) {
+  const items = Array.isArray(meal.items) ? meal.items : Array.isArray(meal.foods) ? meal.foods : [];
+  return {
+    id: meal.id || makeId("meal", mealIndex),
+    name: valueFrom(meal, ["name", "meal", "mealName", "type"]) ?? `Meal ${mealIndex + 1}`,
+    expanded: meal.expanded === false ? false : true,
+    items: items.map(normalizeImportedItem),
+  };
+}
+
+function normalizeImportedItem(item, itemIndex) {
+  const macros = item.macros || {};
+  return {
+    id: item.id || makeId("item", itemIndex),
+    name: valueFrom(item, ["name", "item", "food", "foodName"]) ?? "Name of the item",
+    calories:
+      valueFrom(item, ["calories", "kcal", "calorie", "energy"]) ??
+      valueFrom(macros, ["calories", "kcal"]) ??
+      "0",
+    protein:
+      valueFrom(item, ["protein", "pro"]) ??
+      valueFrom(macros, ["protein", "pro"]) ??
+      "0",
+    carbs:
+      valueFrom(item, ["carbs", "carb", "carbohydrates"]) ??
+      valueFrom(macros, ["carbs", "carb", "carbohydrates"]) ??
+      "0",
+    fat:
+      valueFrom(item, ["fat", "fats"]) ??
+      valueFrom(macros, ["fat", "fats"]) ??
+      "0",
+  };
+}
+
+function valueFrom(source, keys) {
+  for (const key of keys) {
+    if (source?.[key] !== undefined && source[key] !== null && source[key] !== "") return String(source[key]);
+  }
+  return undefined;
+}
+
+function currentStateJson() {
+  return JSON.stringify(
+    {
+      view: state.view,
+      streak: state.streak,
+      limits: state.limits,
+      meals: state.meals.map((meal) => ({
+        name: meal.name,
+        expanded: meal.expanded,
+        items: meal.items.map((item) => ({
+          name: item.name,
+          calories: item.calories,
+          protein: item.protein,
+          carbs: item.carbs,
+          fat: item.fat,
+        })),
+      })),
+    },
+    null,
+    2,
+  );
+}
+
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.append(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  textarea.remove();
+}
 
 async function downloadPreview() {
   try {

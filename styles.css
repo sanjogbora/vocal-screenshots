@@ -298,9 +298,56 @@ input {
   outline: none;
 }
 
-input:focus {
+textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 11px;
+  color: var(--ink);
+  background: #fffaf0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  outline: none;
+  resize: vertical;
+  font: 12px/1.45 "Plus Jakarta Sans", Arial, sans-serif;
+}
+
+input:focus,
+textarea:focus {
   border-color: var(--ochre);
   box-shadow: 0 0 0 3px rgba(221, 162, 6, 0.14);
+}
+
+.json-section {
+  display: grid;
+  gap: 12px;
+}
+
+.json-section h2 {
+  margin: 0;
+}
+
+.json-textarea {
+  min-height: 118px;
+}
+
+.prompt-textarea {
+  min-height: 190px;
+}
+
+.import-textarea {
+  min-height: 170px;
+}
+
+.json-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.json-status {
+  color: rgba(78, 78, 78, 0.78);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .meal-editor {
