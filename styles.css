@@ -369,7 +369,7 @@ textarea:focus {
   font-weight: 700;
 }
 
-.json-steps span {
+.step-number {
   width: 24px;
   height: 24px;
   display: grid;
@@ -379,6 +379,10 @@ textarea:focus {
   border-radius: 50%;
   font-size: 12px;
   font-weight: 700;
+}
+
+.step-copy {
+  min-width: 0;
 }
 
 .json-actions {
